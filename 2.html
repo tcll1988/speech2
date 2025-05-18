@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国語スピーチコンテスト　朗読文①</title>
+  <style>
+    :root{--color-primary:#003366;--color-bg:#f9f9f9;--color-card:#fff;--color-sentence-bg:#f1f1f1;--color-active:#c8e6c9;--font-base:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;--transition:.3s}
+    html{font-size:clamp(12px,2vw,18px)}
+    body{margin:0;padding:0;font-family:var(--font-base);background:var(--color-bg);color:#333;line-height:1.6}
+    header,footer{text-align:center;padding:1em}
+    header{background:var(--color-primary);color:#fff;font-size:calc(1.5em+1vw)}
+    footer{font-size:calc(.8em+.5vw);color:#777}
+    .container{max-width:800px;margin:1em auto;padding:1em;background:var(--color-card);border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
+    .controls{display:flex;justify-content:center;align-items:center;gap:.5em;margin-bottom:1em}
+    select,button{padding:.5em 1em;font-size:1em;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer}
+    button:hover{background:#eee}
+    #playSeqBtn{border-color:var(--color-primary);color:var(--color-primary)}
+    #stopSeqBtn{border-color:#cc0000;color:#cc0000}
+    #backBtn{border-color:#555;color:#555}
+    .sentence{padding:1em;margin-bottom:1.5em;background:var(--color-sentence-bg);border-left:4px solid var(--color-primary);border-radius:4px;cursor:pointer;transition:transform var(--transition),box-shadow var(--transition)}
+    .sentence:hover{transform:translateY(-5px);box-shadow:0 6px 12px rgba(0,0,0,.1)}
+    .sentence.active{background:var(--color-active);border-left-color:#2e7d32;box-shadow:0 8px 16px rgba(0,0,0,.2)}
+    .mapping{display:inline-flex;flex-wrap:wrap;gap:.2em}
+    .pair{display:flex;flex-direction:column;align-items:center}
+    .chinese{font-family:"SimHei","Heiti",sans-serif;font-weight:bold;color:var(--color-primary)}
+    .pinyin{font-size:.8em;color:#555}
+    .translation{margin-top:.5em;font-weight:bold;color:#333}
+    @media(max-width:600px){.container{padding:.5em}.controls{flex-direction:column;gap:.2em}.sentence{padding:.8em}}
+  </style>
+</head>
+<body>
+  <header>中国語スピーチコンテスト　朗読文①</header>
+  <div class="container">
+    <div class="controls">
+      <label for="mode">表示モード：</label>
+      <select id="mode">
+        <option value="chineseOnly">中国語のみ</option>
+        <option value="chinesePinyin">中国語＋ピンイン</option>
+        <option value="chineseTranslation">中国語＋日本語訳</option>
+        <option value="all">すべて表示</option>
+      </select>
+      <button id="playSeqBtn">順番に再生</button>
+      <button id="stopSeqBtn">停止</button>
+      <button id="backBtn">戻る</button>
+    </div>
+    <div id="sentences"></div>
+  </div>
+
+  <template id="tpl-sentence">
+    <div class="sentence" tabindex="0">
+      <div class="mapping"></div>
+      <div class="translation"></div>
+      <audio></audio>
+    </div>
+  </template>
+
+  <script>
+    const data=[
+      {zh:['盼','望','着','，','盼','望','着','，'],py:['Pàn','wàng','zhe','','pàn','wàng','zhe',''],ja:'待ちに待った東風がやってきた。',audio:'sound/13.mp3'},
+      {zh:['东','风','来','了','，','春','天','的','脚','步','近','了','。'],py:['dōng','fēng','lái','le','','chūn','tiān','de','jiǎo','bù','jìn','le',''],ja:'春の足音が近づいてきた。',audio:'sound/14.mp3'},
+      {zh:['一','切','都','像','刚','睡','醒','的','样','子','，'],py:['yī','qiè','dōu','xiàng','gāng','shuì','xǐng','de','yàng','zi',''],ja:'すべては今目覚めたばかりかのように、',audio:'sound/15.mp3'},
+      {zh:['欣','欣','然','张','开','了','眼','。'],py:['xīn','xīn','rán','zhāng','kāi','le','yǎn',''],ja:'気持ちよさそうに目を開いた。',audio:'sound/16.mp3'},
+      {zh:['山','朗','润','起','来','了','，','水','长','起','来','了','，'],py:['Shān','lǎng','rùn','qǐ','lái','le','','shuǐ','zhǎng','qǐ','lái','le',''],ja:'山々は透き通って潤い始め、水は増え始め、',audio:'sound/17.mp3'},
+      {zh:['太','阳','的','脸','红','起','来','了','。'],py:['tài','yáng','de','liǎn','hóng','qǐ','lái','le',''],ja:'太陽の顔は赤くなってきた。',audio:'sound/18.mp3'},
+      {zh:['小','草','偷','偷','地','从','土','里','钻','出','来','，'],py:['Xiǎo','cǎo','tōu','tōu','de','cóng','tǔ','li','zuān','chū','lái',''],ja:'草はこっそりと土から出てきて、',audio:'sound/19.mp3'},
+      {zh:['嫩','嫩','的','，','绿','绿','的','。'],py:['nèn','nèn','de','','lǜ','lǜ','de',''],ja:'とても柔らかく、色もとても鮮やかな緑だ。',audio:'sound/20.mp3'},
+      {zh:['桃','树','、','杏','树','、','梨','树','，'],py:['Táo','shù','','xìng','shù','','lí','shù',''],ja:'桃の木、杏の木、梨の木、',audio:'sound/21.mp3'},
+      {zh:['你','不','让','我','，','我','不','让','你','，'],py:['nǐ','bù','ràng','wǒ','','wǒ','bù','ràng','nǐ',''],ja:'お互いに譲ろうとせず、',audio:'sound/22.mp3'},
+      {zh:['都','开','满','了','花','赶','趟','儿','。'],py:['dōu','kāi','mǎn','le','huā','gǎn','tàng','r',''],ja:'どの木も間に合うように花を満開にさせた。',audio:'sound/23.mp3'},
+      {zh:['红','的','像','火','，','粉','的','像','霞','，','白','的','像','雪','。'],py:['Hóng','de','xiàng','huǒ','','fěn','de','xiàng','xiá','','bái','de','xiàng','xuě',''],ja:'花は火のように赤く、霞のようにピンク色で、また雪のように白い。',audio:'sound/24.mp3'}
+    ];
+    const container=document.getElementById('sentences'),tpl=document.getElementById('tpl-sentence');
+    data.forEach(item=>{
+      const el=tpl.content.cloneNode(true),s=el.querySelector('.sentence');
+      const map=el.querySelector('.mapping');
+      item.zh.forEach((c,i)=>{const pair=document.createElement('div');pair.className='pair';const chi=document.createElement('div');chi.className='chinese';chi.textContent=c;const pin=document.createElement('div');pin.className='pinyin';pin.textContent=item.py[i];pair.append(chi,pin);map.append(pair);} );
+      el.querySelector('.translation').textContent=item.ja;
+      const audioEl=el.querySelector('audio');audioEl.src=item.audio;
+      s.addEventListener('click',()=>{if(!audioEl.paused){audioEl.pause();audioEl.currentTime=0;s.classList.remove('active');}else{document.querySelectorAll('.sentence').forEach(x=>{const a=x.querySelector('audio');a.pause();a.currentTime=0;x.classList.remove('active');});s.classList.add('active');audioEl.play();audioEl.onended=()=>s.classList.remove('active');}});
+      container.append(el);
+    });
+    const sentences=document.querySelectorAll('.sentence'),mode=document.getElementById('mode');
+    function update(){
+      const showPin=['chinesePinyin','all'].includes(mode.value);
+      const showTrans=['chineseTranslation','all'].includes(mode.value);
+      sentences.forEach(s=>{
+        s.querySelectorAll('.pinyin').forEach(p=>p.style.display=showPin?'block':'none');
+        s.querySelector('.translation').style.display=showTrans?'block':'none';
+      });
+    }
+    mode.addEventListener('change',update);update();
+    let seqPlaying=false,seqIndex=0;
+    const playBtn=document.getElementById('playSeqBtn'),stopBtn=document.getElementById('stopSeqBtn'),backBtn=document.getElementById('backBtn');
+    function playSequence(){if(seqIndex>=sentences.length||!seqPlaying){stopSequence();return;}const s=sentences[seqIndex],a=s.querySelector('audio');s.classList.add('active');a.play();a.onended=()=>{s.classList.remove('active');seqIndex++;playSequence();};}
+    function stopSequence(){seqPlaying=false;seqIndex=0;sentences.forEach(s=>{const a=s.querySelector('audio');a.pause();a.currentTime=0;s.classList.remove('active');});}
+    playBtn.addEventListener('click',()=>{if(!seqPlaying){seqPlaying=true;seqIndex=0;playSequence();}});
+    stopBtn.addEventListener('click',()=>stopSequence());
+    backBtn.addEventListener('click',()=>location.href='index.html');
+  </script>
+</body>
+</html>
